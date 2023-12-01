@@ -78,8 +78,6 @@ func getNumberWord(input string, pos int) int {
 		return 9
 	case strings.Index(restOfString, "zero") == 0:
 		return 0
-	case strings.Index(restOfString, "two") == 0:
-		return 2
 	}
 
 	// flag value for no number found
