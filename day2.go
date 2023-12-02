@@ -8,31 +8,37 @@ import (
 	"strings"
 )
 
+// a set of tokens, used either as a bag or as a pull from a bag
 type tokenSet struct {
 	red   int
 	green int
 	blue  int
 }
+
+// game struct to associate the set of pulls to an id
 type game struct {
 	id    int
 	pulls []tokenSet
 }
 
+// entry point, reads the bag, the games and then
+// tests each one to ensure whether they are valid or not
+// prints the total sum of the game ids that are valid
+// at the end
 func main() {
 	gameBag := readBag()
-	fmt.Println(gameBag)
 	games := readGames()
 	var total int
 	for _, testgame := range games {
 		if isValid(testgame, gameBag) {
-			fmt.Println(testgame.id, " possible")
 			total += testgame.id
 		} else {
-			fmt.Println(testgame.id, " impossible")
 		}
 	}
 	fmt.Println(total)
 }
+
+// test a game against a bag to see if it's valid
 func isValid(testgame game, gameBag tokenSet) bool {
 	for _, pull := range testgame.pulls {
 		if pull.red > gameBag.red || pull.blue > gameBag.blue || pull.green > gameBag.green {
@@ -41,6 +47,8 @@ func isValid(testgame game, gameBag tokenSet) bool {
 	}
 	return true
 }
+
+// handle reading the games from a file
 func readGames() (games []game) {
 	file, _ := os.Open("day2gamefile.txt")
 	defer file.Close()
@@ -61,6 +69,8 @@ func readGames() (games []game) {
 	}
 	return
 }
+
+// handle the reading of the bags from the file system
 func readBag() tokenSet {
 	fileContent, _ := os.ReadFile("day2bag.txt")
 	text := string(fileContent)
@@ -68,6 +78,7 @@ func readBag() tokenSet {
 	return parseTokenset(text)
 }
 
+// parse the tokenset out of a string
 func parseTokenset(text string) (filebag tokenSet) {
 	tokenTypes := strings.Split(text, ", ")
 	for _, tokenType := range tokenTypes {
