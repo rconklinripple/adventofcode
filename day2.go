@@ -26,16 +26,34 @@ type game struct {
 // prints the total sum of the game ids that are valid
 // at the end
 func main() {
-	gameBag := readBag()
-	games := readGames()
+	//games := readGames("day2testgamefile.txt")
+	games := readGames("day2gamefile.txt")
 	var total int
 	for _, testgame := range games {
-		if isValid(testgame, gameBag) {
-			total += testgame.id
-		} else {
-		}
+		gameBag := buildBag(testgame)
+		powerset := gameBag.red * gameBag.blue * gameBag.green
+		fmt.Println(testgame.id, ": ", powerset)
+		total += powerset
 	}
 	fmt.Println(total)
+}
+
+// build a new minimal bag based on the game passed in.
+// this bag will contain the minimum number of tokens to
+// run a particular game
+func buildBag(testgame game) (gameBag tokenSet) {
+	for _, pull := range testgame.pulls {
+		if pull.red > gameBag.red {
+			gameBag.red = pull.red
+		}
+		if pull.green > gameBag.green {
+			gameBag.green = pull.green
+		}
+		if pull.blue > gameBag.blue {
+			gameBag.blue = pull.blue
+		}
+	}
+	return
 }
 
 // test a game against a bag to see if it's valid
@@ -49,8 +67,8 @@ func isValid(testgame game, gameBag tokenSet) bool {
 }
 
 // handle reading the games from a file
-func readGames() (games []game) {
-	file, _ := os.Open("day2gamefile.txt")
+func readGames(filename string) (games []game) {
+	file, _ := os.Open(filename)
 	defer file.Close()
 
 	for scanner := bufio.NewScanner(file); scanner.Scan(); {
