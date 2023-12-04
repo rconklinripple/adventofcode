@@ -22,8 +22,8 @@ type gear struct {
 
 // Entry point, outputs the total of all the part numbers found in
 // the input file
-func main() {
-	lines := readLines("day3input.txt")
+func main3() {
+	lines := ReadLines("day3input.txt")
 	_, gears := parsePartNumbers(lines)
 	total := 0
 	for _, gear := range gears {
@@ -166,7 +166,7 @@ func isGearGlyph(checkPos int, checkLine int, lines []string) bool {
 
 // reads in the lines of text from the specified filename
 // into a string array
-func readLines(filename string) (lines []string) {
+func ReadLines(filename string) (lines []string) {
 	file, _ := os.Open(filename)
 	defer file.Close()
 
