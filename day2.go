@@ -25,7 +25,7 @@ type game struct {
 // tests each one to ensure whether they are valid or not
 // prints the total sum of the game ids that are valid
 // at the end
-func main() {
+func main2() {
 	//games := readGames("day2testgamefile.txt")
 	games := readGames("day2gamefile.txt")
 	var total int

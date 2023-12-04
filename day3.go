@@ -14,22 +14,34 @@ type partNumber struct {
 	startPos        int
 	endPos          int
 }
+type gear struct {
+	lineNum       int
+	charPos       int
+	adjacentParts []*partNumber
+}
 
 // Entry point, outputs the total of all the part numbers found in
 // the input file
 func main() {
 	lines := readLines("day3input.txt")
-	parts := parsePartNumbers(lines)
+	_, gears := parsePartNumbers(lines)
 	total := 0
-	for _, part := range parts {
-		total += part.value
+	for _, gear := range gears {
+		if len(gear.adjacentParts) == 2 {
+			ratio := gear.adjacentParts[0].value * gear.adjacentParts[1].value
+			total += ratio
+		}
 	}
+
+	// for _, part := range parts {
+	// 	total += part.value
+	// }
 	fmt.Println(total)
 }
 
 // parse the part numbers out of the list of strings, returning
 // a list of part numbers
-func parsePartNumbers(lines []string) (parts []partNumber) {
+func parsePartNumbers(lines []string) (parts []partNumber, gears []*gear) {
 	var currentPart *partNumber = nil
 	//parse line-by-line
 	for lineNum, line := range lines {
@@ -42,10 +54,12 @@ func parsePartNumbers(lines []string) (parts []partNumber) {
 		for charPos, _ := range line {
 			if line[charPos] >= '0' && line[charPos] <= '9' {
 				if currentPart == nil {
+					// create a new part to be filled in
 					currentPart = new(partNumber)
 					currentPart.hasAdjacentPart = false
 					currentPart.startPos = charPos
 				}
+
 				// handle adding digits to number
 				newVal, _ := strconv.Atoi(line[charPos : charPos+1])
 				currentPart.value = currentPart.value*10 + newVal //handle place shifting
@@ -54,7 +68,41 @@ func parsePartNumbers(lines []string) (parts []partNumber) {
 				for checkChar := -1; checkChar <= 1; checkChar++ {
 					for checkLine := -1; checkLine <= 1; checkLine++ {
 						if !currentPart.hasAdjacentPart {
-							currentPart.hasAdjacentPart = isSpecialGlyph(charPos+checkChar, lineNum+checkLine, lines)
+							currentPart.hasAdjacentPart = isEngineGlyph(charPos+checkChar, lineNum+checkLine, lines)
+						}
+					}
+				}
+
+				//look around for a gear glyph
+				for checkChar := -1; checkChar <= 1; checkChar++ {
+					for checkLine := -1; checkLine <= 1; checkLine++ {
+						gearCharPos := charPos + checkChar
+						gearLineNum := lineNum + checkLine
+						if isGearGlyph(gearCharPos, gearLineNum, lines) {
+							//look for this gear already present, if foundGear, add the current part
+							foundGear := false
+							for _, gear := range gears {
+								if gear.charPos == gearCharPos && gear.lineNum == gearLineNum {
+									foundGear = true
+									//see if adjacent part is already appeneded, if not add it
+									foundPart := false
+									for _, checkPartNum := range gear.adjacentParts {
+										if checkPartNum == currentPart {
+											foundPart = true
+										}
+									}
+									if !foundPart {
+										gear.adjacentParts = append(gear.adjacentParts, currentPart)
+										fmt.Println("HI")
+									}
+
+								}
+							}
+							if !foundGear {
+								// make a new gear
+								gears = append(gears, &gear{gearLineNum, gearCharPos, []*partNumber{currentPart}})
+							}
+
 						}
 					}
 				}
@@ -85,7 +133,7 @@ func parsePartNumbers(lines []string) (parts []partNumber) {
 }
 
 // helper function to detect the special case rules to determine if a glyph is an engine part
-func isSpecialGlyph(checkPos int, checkLine int, lines []string) bool {
+func isEngineGlyph(checkPos int, checkLine int, lines []string) bool {
 	switch {
 	case checkPos < 0:
 		return false
@@ -98,6 +146,22 @@ func isSpecialGlyph(checkPos int, checkLine int, lines []string) bool {
 	}
 	var char rune = rune(lines[checkLine][checkPos])
 	return !unicode.IsDigit(char) && char != '.'
+}
+
+// helper function to detect the special case rules to determine if a glyph is an engine part
+func isGearGlyph(checkPos int, checkLine int, lines []string) bool {
+	switch {
+	case checkPos < 0:
+		return false
+	case checkLine < 0:
+		return false
+	case checkLine > len(lines)-1:
+		return false
+	case checkPos > len(lines[checkLine])-1:
+		return false
+	}
+	var char rune = rune(lines[checkLine][checkPos])
+	return char == '*'
 }
 
 // reads in the lines of text from the specified filename
