@@ -13,6 +13,15 @@ type Card struct {
 	points         int
 }
 
+func getNumSubCards(pos int, allCards *[]Card) int {
+	checkCard := (*allCards)[pos]
+	totalWinners := 1
+
+	for nextCard := 1; nextCard <= checkCard.numWinners; nextCard++ {
+		totalWinners += getNumSubCards(pos+nextCard, allCards)
+	}
+	return totalWinners
+}
 func newCard(cardLine string) *Card {
 	card := new(Card)
 	cardValues := strings.Split(cardLine, ": ")
@@ -41,17 +50,22 @@ func newCard(cardLine string) *Card {
 			} else {
 				card.points = card.points * 2
 			}
+			card.numWinners++
 		}
 	}
 	return card
 }
 
 func main() {
-
+	var allCards []Card
 	grandTotal := 0
 	for _, line := range ReadLines("day4input.txt") {
 		lineCard := newCard(line)
-		grandTotal += lineCard.points
+		allCards = append(allCards, *lineCard)
 	}
+	for i, _ := range allCards {
+		grandTotal += getNumSubCards(i, &allCards)
+	}
+
 	fmt.Println((grandTotal))
 }
