@@ -5,41 +5,53 @@ import (
 	"strings"
 )
 
+type Card struct {
+	cardName       string
+	pickedNumbers  []string
+	winningNumbers map[string]bool
+	numWinners     int
+	points         int
+}
+
+func newCard(cardLine string) *Card {
+	card := new(Card)
+	cardValues := strings.Split(cardLine, ": ")
+	card.cardName = cardValues[0]
+	picksAndWinners := strings.Split(cardValues[1], " | ")
+
+	//put winning numbers into a map
+	card.winningNumbers = make(map[string]bool, 5)
+	for _, winnerVal := range strings.Split(picksAndWinners[1], " ") {
+		if len(winnerVal) == 1 {
+			winnerVal = " " + winnerVal
+		}
+		card.winningNumbers[winnerVal] = true
+	}
+
+	for _, pickedNum := range strings.Split(picksAndWinners[0], " ") {
+		if pickedNum == "" {
+			continue
+		}
+		if len(pickedNum) == 1 {
+			pickedNum = " " + pickedNum
+		}
+		if card.winningNumbers[pickedNum] {
+			if card.points == 0 {
+				card.points = 1
+			} else {
+				card.points = card.points * 2
+			}
+		}
+	}
+	return card
+}
+
 func main() {
+
 	grandTotal := 0
 	for _, line := range ReadLines("day4input.txt") {
-		cardValues := strings.Split(line, ": ")
-		picksAndWinners := strings.Split(cardValues[1], " | ")
-		cardPoints := 0
-
-		//put winning numbers into a map
-		winningNumbers := make(map[string]bool, 5)
-		for _, winnerVal := range strings.Split(picksAndWinners[1], " ") {
-			if len(winnerVal) == 1 {
-				winnerVal = " " + winnerVal
-			}
-			winningNumbers[winnerVal] = true
-		}
-
-		for _, pickedNum := range strings.Split(picksAndWinners[0], " ") {
-			if pickedNum == "" {
-				continue
-			}
-			if len(pickedNum) == 1 {
-				pickedNum = " " + pickedNum
-			}
-			if winningNumbers[pickedNum] {
-				if cardPoints == 0 {
-					cardPoints = 1
-				} else {
-					cardPoints = cardPoints * 2
-				}
-				fmt.Println((pickedNum))
-			}
-		}
-
-		fmt.Println(cardPoints, line)
-		grandTotal += cardPoints
+		lineCard := newCard(line)
+		grandTotal += lineCard.points
 	}
 	fmt.Println((grandTotal))
 }
