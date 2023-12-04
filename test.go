@@ -10,7 +10,7 @@ import (
 )
 
 // Entry point
-func main2() {
+func main1() {
 	fmt.Println(addUpValuesFromInputFile())
 }
 
